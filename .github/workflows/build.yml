@@ -27,6 +27,12 @@ jobs:
       with:
         repository: git/git
         ref: ${{ inputs.tag }}
+        path: git-src
+
+    - uses: actions/checkout@v4
+      with:
+        ref: main
+        path: main
 
     - name: Setup linux dependencies
       if: matrix.config.os == 'ubuntu-latest'
@@ -42,19 +48,20 @@ jobs:
     - name: Build webview packed (linux)
       shell: bash -el {0}
       run: |
+        cd git-src
         make configure
         RUNTIME_PREFIX=True ./configure --prefix=$(pwd)/build --with-curl
         make
         make install
         mkdir -p artifacts
-        tar -czf artifacts/git-${{ inputs.tag }}-portable.tar.gz build
+        tar -czf artifacts/git-${{ inputs.tag }}-$(uname -s)-$(uname -m)-portable.tar.gz build
     - name: Update release assets and text
       uses: actions/github-script@v7
       env:
-        SEARCH_PATTERN: "artifacts/*"
+        SEARCH_PATTERN: "git-src/artifacts/*"
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          const script = require('./.github/actions/update_unstable.js');
+          const script = require('./main/.github/actions/update_unstable.js');
           const output = await script({github, context, glob});
           console.log(output);
