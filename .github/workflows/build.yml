@@ -55,7 +55,7 @@ jobs:
         make
         make install
         mkdir -p artifacts
-        tar -czf artifacts/git-${{ inputs.tag }}-$(uname -s)-$(uname -m)-portable.tar.gz build
+        tar -czf artifacts/git-${{ inputs.tag }}-${{ matrix.config.os }}-$(uname -m)-portable.tar.gz build
     - name: Update release assets and text
       uses: actions/github-script@v7
       env:
