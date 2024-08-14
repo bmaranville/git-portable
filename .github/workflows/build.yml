@@ -51,7 +51,7 @@ jobs:
       run: |
         cd git-src
         make configure
-        RUNTIME_PREFIX=True ./configure --prefix=$(pwd)/build --with-curl
+        RUNTIME_PREFIX=True ./configure --prefix=$(pwd)/build --with-curl CFLAGS="${CFLAGS} -static"
         make
         make install
         mkdir -p artifacts
