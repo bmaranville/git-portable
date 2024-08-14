@@ -28,16 +28,20 @@ jobs:
         repository: git/git
         ref: ${{ inputs.tag }}
 
-    - uses: conda-incubator/setup-miniconda@v3
-      with:
-        auto-update-conda: true
-        shell: bash
+    - name: Setup linux dependencies
+      if: {{ matrix.config.os }} == 'ubuntu-latest'
+      shell: bash -el {0}
+      run: |
+        apt-get install -y dh-autoreconf libcurl4-gnutls-dev libexpat1-dev gettext libz-dev libssl-dev
+
+    - name: Setup MacOS dependencies
+      if: {{ matrix.config.os }} != 'ubuntu-latest'
+      run: |
+        brew install automake expat curl make
 
     - name: Build webview packed (linux)
       shell: bash -el {0}
       run: |
-        conda activate base
-        conda install -c conda-forge libcurl make automake iconv
         make configure
         RUNTIME_PREFIX=True ./configure --prefix=$(pwd)/build --with-curl
         make
