@@ -38,6 +38,8 @@ jobs:
       run: |
         conda activate base
         conda install -c conda-forge libcurl make
+        pwd
+        ls
         RUNTIME_PREFIX=True ./configure --prefix=$(pwd)/build --with-curl
         make
         make install
