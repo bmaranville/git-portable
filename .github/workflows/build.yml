@@ -36,13 +36,13 @@ jobs:
         path: main
 
     - name: Setup linux dependencies
-      if: matrix.config.os == 'ubuntu-latest'
+      if: startsWith('ubuntu', matrix.config.os)
       shell: bash -el {0}
       run: |
         sudo apt-get install -y dh-autoreconf libcurl4-gnutls-dev libexpat1-dev gettext libz-dev libssl-dev
 
     - name: Setup MacOS dependencies
-      if: matrix.config.os != 'ubuntu-latest'
+      if: startsWith('macos', matrix.config.os )
       run: |
         brew install automake expat curl make
 
