@@ -1,0 +1,55 @@
+name: Build git
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git version tag to build'
+        required: true
+        type: string
+
+env:
+  branch_name: main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.config.os }}
+    if: ${{ inputs.tag }}
+    strategy:
+      matrix:
+        config:
+          - { os: ubuntu-latest }
+          - { os: macos-latest }
+          - { os: macos-13 }
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        repository: git/git
+        ref: ${{ inputs.tag }}
+
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        shell: bash
+
+    - name: Build webview packed (linux)
+      shell: bash -el {0}
+      run: |
+        conda activate base
+        conda install -c conda-forge libcurl make
+        RUNTIME_PREFIX=True ./configure --prefix=$(pwd)/build --with-curl
+        make
+        make install
+        mkdir -p artifacts
+        tar -czf artifacts/git-${{ inputs.tag }}-portable.tar.gz build
+    - name: Update release assets and text
+      uses: actions/github-script@v7
+      env:
+        SEARCH_PATTERN: "artifacts/*"
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const script = require('./.github/actions/update_unstable.js');
+          const output = await script({github, context, glob});
+          console.log(output);
